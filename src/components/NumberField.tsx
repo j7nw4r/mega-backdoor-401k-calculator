@@ -55,7 +55,7 @@ export function NumberField({
         <input
           type="number"
           inputMode="decimal"
-          className="tnum w-full bg-transparent px-3 py-2 text-right text-slate-900 outline-none"
+          className="tnum w-full bg-transparent px-3 py-1.5 text-right text-slate-900 outline-none"
           value={text}
           min={min}
           max={max}

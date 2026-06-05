@@ -62,10 +62,10 @@ export default function App() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          <section className="rounded-xl border border-slate-200 bg-white p-6">
-            <h2 className="mb-6 text-lg font-semibold text-slate-900">
+      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <section className="rounded-xl border border-slate-200 bg-white p-5">
+            <h2 className="mb-4 text-lg font-semibold text-slate-900">
               Your details
             </h2>
             <InputsPanel
@@ -75,19 +75,19 @@ export default function App() {
             />
           </section>
 
-          <section className="space-y-8">
+          <div className="space-y-6">
             <ResultsSummary comparison={comparison} inputs={inputs} />
-          </section>
+            <section className="rounded-xl border border-slate-200 bg-white p-5">
+              <GrowthChart
+                projection={comparison.withMega}
+                inflationPct={inputs.inflationPct}
+                currentAge={inputs.currentAge}
+              />
+            </section>
+          </div>
         </div>
 
-        <section className="mt-8 rounded-xl border border-slate-200 bg-white p-6">
-          <h2 className="mb-4 text-lg font-semibold text-slate-900">
-            Balance growth
-          </h2>
-          <GrowthChart projection={comparison.withMega} />
-        </section>
-
-        <div className="mt-8 space-y-6">
+        <div className="mt-6 space-y-4">
           <YearByYearTable projection={comparison.withMega} />
           <AssumptionsDisclosure />
         </div>
