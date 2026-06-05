@@ -13,11 +13,11 @@ interface InputsPanelProps {
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <fieldset className="space-y-4">
+    <fieldset className="space-y-2.5">
       <legend className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
         {title}
       </legend>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">{children}</div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{children}</div>
     </fieldset>
   );
 }
@@ -62,7 +62,7 @@ export function InputsPanel({ inputs, setField, onReset }: InputsPanelProps) {
   const set = (key: keyof CalculatorInputs) => (v: number) => setField(key, v);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5">
       <Section title="You & timeline">
         <NumberField
           label="Current age"
