@@ -23,7 +23,7 @@ function Stat({
         ? "text-brand-600"
         : "text-slate-900";
   return (
-    <div>
+    <div className="rounded-xl border border-slate-200 bg-white p-4">
       <div className="text-xs font-medium tracking-wide text-slate-500 uppercase">
         {label}
       </div>
@@ -82,7 +82,7 @@ export function ResultsSummary({ comparison, inputs }: ResultsSummaryProps) {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 gap-4">
         <Stat
           label="Total contributed"
           value={fmtUSD(withMega.totalContributed)}

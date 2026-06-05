@@ -13,11 +13,11 @@ interface InputsPanelProps {
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <fieldset className="space-y-2.5">
-      <legend className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
+    <fieldset>
+      <legend className="mb-2.5 text-xs font-semibold tracking-wide text-slate-500 uppercase">
         {title}
       </legend>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{children}</div>
+      <div className="space-y-3">{children}</div>
     </fieldset>
   );
 }
@@ -153,7 +153,6 @@ export function InputsPanel({ inputs, setField, onReset }: InputsPanelProps) {
           max={100}
           hint="% of pay, auto-capped to the 415(c) room"
         />
-        <div className="hidden sm:block" />
       </Section>
 
       <Section title="Growth">
@@ -185,7 +184,7 @@ export function InputsPanel({ inputs, setField, onReset }: InputsPanelProps) {
           Defaults are the {LIMITS_YEAR} figures. Edit them to model a different
           year or plan.
         </p>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="space-y-3">
           <NumberField
             label="Elective deferral limit (402(g))"
             value={inputs.deferralLimit}

@@ -117,6 +117,8 @@ export function GrowthChart({
             dataKey="age"
             tick={{ fontSize: 12, fill: "#64748b" }}
             tickLine={false}
+            interval="preserveStartEnd"
+            minTickGap={24}
             label={{
               value: "Age",
               position: "insideBottom",
