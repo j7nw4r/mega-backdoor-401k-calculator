@@ -12,6 +12,8 @@ including mega-backdoor Roth (after-tax) contributions. No backend.
 - `src/lib/irs.ts` — single source of truth for IRS limits and the age-based
   catch-up logic. Update yearly.
 - `src/lib/defaults.ts` — initial input values.
+- `src/lib/validation.ts` — pure `validateInputs(inputs)` returning per-field
+  error messages (range + cross-field rules). Add new field bounds here.
 - `src/components/*` — presentational; the engine output flows in via props.
 
 ## Conventions

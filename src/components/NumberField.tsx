@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 
 interface NumberFieldProps {
   label: string;
@@ -11,6 +11,8 @@ interface NumberFieldProps {
   step?: number;
   /** Small grey hint shown under the field. */
   hint?: string;
+  /** Validation message; when set, the field shows a red error state. */
+  error?: string;
 }
 
 /**
@@ -31,9 +33,12 @@ export function NumberField({
   max,
   step = 1,
   hint,
+  error,
 }: NumberFieldProps) {
   const [text, setText] = useState<string>(() => String(value));
   const [lastValue, setLastValue] = useState(value);
+  const id = useId();
+  const descId = `${id}-desc`;
 
   // Re-sync the visible text when the numeric value changes from the outside
   // (e.g. "Reset to defaults"). Adjusting state during render by comparing the
@@ -45,16 +50,27 @@ export function NumberField({
     if (Number(text) !== value) setText(String(value));
   }
 
+  const borderClasses = error
+    ? "border-red-400 focus-within:border-red-500 focus-within:ring-red-100"
+    : "border-slate-300 focus-within:border-brand-500 focus-within:ring-brand-100";
+
   return (
-    <label className="block">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
-      <div className="mt-1 flex items-center rounded-md border border-slate-300 bg-white focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-100">
+    <div>
+      <label htmlFor={id} className="text-sm font-medium text-slate-700">
+        {label}
+      </label>
+      <div
+        className={`mt-1 flex items-center rounded-md border bg-white focus-within:ring-2 ${borderClasses}`}
+      >
         {affix === "dollar" && (
           <span className="pl-3 text-slate-400 select-none">$</span>
         )}
         <input
+          id={id}
           type="number"
           inputMode="decimal"
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error || hint ? descId : undefined}
           className="tnum w-full bg-transparent px-3 py-1.5 text-right text-slate-900 outline-none"
           value={text}
           min={min}
@@ -72,9 +88,18 @@ export function NumberField({
           <span className="pr-3 text-slate-400 select-none">%</span>
         )}
       </div>
-      {hint && (
-        <span className="mt-1 block text-xs text-slate-400">{hint}</span>
-      )}
-    </label>
+      {error ? (
+        <span
+          id={descId}
+          className="mt-1 block text-xs font-medium text-red-600"
+        >
+          {error}
+        </span>
+      ) : hint ? (
+        <span id={descId} className="mt-1 block text-xs text-slate-400">
+          {hint}
+        </span>
+      ) : null}
+    </div>
   );
 }
