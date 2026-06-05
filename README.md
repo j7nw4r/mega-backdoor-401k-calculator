@@ -6,7 +6,7 @@ contributions. It projects your balance to retirement, tracks the pre-tax and
 Roth buckets separately, and shows how much extra tax-free money the
 mega-backdoor strategy adds.
 
-Live site: _(added after first deploy)_
+Live site: https://mega-backdoor-401k-calculator.pages.dev
 
 ## What it models
 
