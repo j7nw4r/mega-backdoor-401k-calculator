@@ -26,6 +26,7 @@ export const DEFAULT_INPUTS: CalculatorInputs = {
   afterTaxContribPct: 15,
 
   rateOfReturnPct: 7,
+  inflationPct: 3,
 
   deferralLimit: DEFERRAL_LIMIT_2026,
   allSourcesLimit: ALL_SOURCES_LIMIT_2026,

@@ -21,6 +21,8 @@ Live site: https://mega-backdoor-401k-calculator.pages.dev
     calculators skip.
 - The **401(a)(17) compensation cap** on the salary used for plan math.
 - Age-based catch-up: standard at 50+, the SECURE 2.0 super catch-up at 60-63.
+- An **inflation-adjusted ("today's dollars") view** of the projected balance,
+  discounting nominal dollars by your inflation assumption.
 
 It runs the projection twice (with and without the after-tax contribution) to
 quantify the mega-backdoor gain.

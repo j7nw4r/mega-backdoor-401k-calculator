@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compare, deferralInfo, project } from "./calc";
+import { compare, deferralInfo, project, realValue } from "./calc";
 import { DEFAULT_INPUTS } from "./defaults";
 import type { CalculatorInputs } from "../types";
 
@@ -194,5 +194,27 @@ describe("deferralInfo", () => {
     expect(info.cappedSalary).toBe(360_000);
     expect(info.desired).toBeCloseTo(0.04 * 360_000, 6); // not 4% of $500k
     expect(info.isCapped).toBe(false);
+  });
+});
+
+describe("realValue", () => {
+  it("returns the nominal amount at year 0 or 0% inflation", () => {
+    expect(realValue(100_000, 3, 0)).toBeCloseTo(100_000, 6);
+    expect(realValue(100_000, 0, 30)).toBeCloseTo(100_000, 6);
+  });
+
+  it("discounts future dollars by compound inflation", () => {
+    // $103 a year out at 3% inflation is worth ~$100 today.
+    expect(realValue(103, 3, 1)).toBeCloseTo(100, 6);
+    expect(realValue(1_000_000, 3, 30)).toBeCloseTo(
+      1_000_000 / Math.pow(1.03, 30),
+      4,
+    );
+  });
+
+  it("is strictly decreasing as the horizon grows", () => {
+    expect(realValue(1_000_000, 3, 30)).toBeLessThan(
+      realValue(1_000_000, 3, 10),
+    );
   });
 });

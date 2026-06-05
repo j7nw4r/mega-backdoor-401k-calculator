@@ -18,6 +18,12 @@ export function AssumptionsDisclosure() {
             retirement year itself has no contributions.
           </li>
           <li>
+            "Today&rsquo;s dollars" figures discount the projected balance by
+            your inflation rate over the years to retirement (real = nominal /
+            (1 + inflation)^years), showing its purchasing power in current
+            dollars.
+          </li>
+          <li>
             Your salary grows once per year by the raise percentage and is
             capped at the 401(a)(17) compensation limit for plan math.
           </li>
