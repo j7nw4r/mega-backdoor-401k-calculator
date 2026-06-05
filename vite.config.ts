@@ -7,8 +7,9 @@ export default defineConfig({
   // Cloudflare Pages serves from the project root, so the default base is fine.
   plugins: [react(), tailwindcss()],
   test: {
-    // The projection engine is pure, so a node environment is enough and fast.
+    // The projection engine is pure, so node is the default. Component tests
+    // opt into jsdom per-file via a `// @vitest-environment jsdom` docblock.
     environment: "node",
-    include: ["src/**/*.test.ts"],
+    include: ["src/**/*.test.{ts,tsx}"],
   },
 });
