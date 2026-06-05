@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+/* Tailwind v4 reads design tokens from @theme. Keep a small, calm palette. */
+@theme {
+  --color-brand-50: #eef6ff;
+  --color-brand-100: #d9eaff;
+  --color-brand-500: #2563eb;
+  --color-brand-600: #1d4ed8;
+  --color-brand-700: #1e40af;
+  --color-roth-500: #059669;
+  --color-roth-600: #047857;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+/* Tabular figures keep currency columns aligned. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
