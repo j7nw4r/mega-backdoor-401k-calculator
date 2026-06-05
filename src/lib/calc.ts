@@ -127,3 +127,42 @@ export function compare(inputs: CalculatorInputs): ComparisonResult {
     megaRothGain: withMega.finalRoth - withoutMega.finalRoth,
   };
 }
+
+/** The pre-tax deferral limit being applied, and how the elected contribution
+ *  sits against it, evaluated for the current age and this year's salary. This
+ *  is the same rule project() uses for the first year, surfaced for the UI. */
+export interface DeferralInfo {
+  /** 402(g) base limit only (the editable value). */
+  baseLimit: number;
+  /** Age-based catch-up included this year (0 under 50). */
+  catchUp: number;
+  /** baseLimit + catchUp: the actual ceiling applied. */
+  effectiveLimit: number;
+  /** This year's salary after the 401(a)(17) compensation cap. */
+  cappedSalary: number;
+  /** Elected percent of capped salary, before the limit is applied. */
+  desired: number;
+  /** What actually gets deferred: min(desired, effectiveLimit). */
+  applied: number;
+  /** True when the elected percent would exceed the limit. */
+  isCapped: boolean;
+}
+
+export function deferralInfo(inputs: CalculatorInputs): DeferralInfo {
+  const cappedSalary = Math.min(inputs.annualSalary, inputs.compCap);
+  const catchUp = catchUpForAge(inputs.currentAge, {
+    catchUp50: inputs.catchUp50,
+    catchUp6063: inputs.catchUp6063,
+  });
+  const effectiveLimit = inputs.deferralLimit + catchUp;
+  const desired = (inputs.employeeContribPct / 100) * cappedSalary;
+  return {
+    baseLimit: inputs.deferralLimit,
+    catchUp,
+    effectiveLimit,
+    cappedSalary,
+    desired,
+    applied: Math.min(desired, effectiveLimit),
+    isCapped: desired > effectiveLimit,
+  };
+}

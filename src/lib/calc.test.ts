@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compare, project } from "./calc";
+import { compare, deferralInfo, project } from "./calc";
 import { DEFAULT_INPUTS } from "./defaults";
 import type { CalculatorInputs } from "../types";
 
@@ -150,5 +150,49 @@ describe("compare", () => {
     expect(c.megaRothGain).toBeGreaterThan(0);
     // The gain is exactly the with-mega Roth bucket (without-mega has none).
     expect(c.megaRothGain).toBeCloseTo(c.withMega.finalRoth, 6);
+  });
+});
+
+describe("deferralInfo", () => {
+  it("reports the base 402(g) limit with no catch-up under 50", () => {
+    const info = deferralInfo(inputs({ currentAge: 40 }));
+    expect(info.catchUp).toBe(0);
+    expect(info.effectiveLimit).toBe(24_500);
+  });
+
+  it("adds the standard catch-up at 50-59 and the super catch-up at 60-63", () => {
+    expect(deferralInfo(inputs({ currentAge: 55 })).effectiveLimit).toBe(
+      24_500 + 8_000,
+    );
+    expect(deferralInfo(inputs({ currentAge: 62 })).effectiveLimit).toBe(
+      24_500 + 11_250,
+    );
+    // Reverts to the standard catch-up at 64+.
+    expect(deferralInfo(inputs({ currentAge: 65 })).effectiveLimit).toBe(
+      24_500 + 8_000,
+    );
+  });
+
+  it("flags when the elected percent exceeds the limit, matching the engine", () => {
+    const i = inputs({
+      currentAge: 40,
+      annualSalary: 200_000,
+      employeeContribPct: 20, // 20% of $200k = $40k, over the $24.5k limit
+    });
+    const info = deferralInfo(i);
+    expect(info.desired).toBeCloseTo(40_000, 6);
+    expect(info.isCapped).toBe(true);
+    expect(info.applied).toBe(24_500);
+    // The applied amount equals the engine's first-year deferral exactly.
+    expect(project(i).rows[0].deferral).toBeCloseTo(info.applied, 6);
+  });
+
+  it("uses comp-capped salary for the elected amount", () => {
+    const info = deferralInfo(
+      inputs({ currentAge: 40, annualSalary: 500_000, employeeContribPct: 4 }),
+    );
+    expect(info.cappedSalary).toBe(360_000);
+    expect(info.desired).toBeCloseTo(0.04 * 360_000, 6); // not 4% of $500k
+    expect(info.isCapped).toBe(false);
   });
 });

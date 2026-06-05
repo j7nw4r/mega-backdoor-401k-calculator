@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import type { CalculatorInputs } from "../types";
+import { deferralInfo } from "../lib/calc";
+import { fmtUSD } from "../lib/format";
 import { LIMITS_YEAR } from "../lib/irs";
 import { NumberField } from "./NumberField";
 
@@ -17,6 +19,42 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
       </legend>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">{children}</div>
     </fieldset>
+  );
+}
+
+/** Shows the pre-tax (402(g)) limit currently being applied next to the
+ *  contribution input, including age catch-up and whether the elected percent
+ *  is being capped. Derived from the same rule the projection engine uses. */
+function DeferralLimitNote({ inputs }: { inputs: CalculatorInputs }) {
+  const info = deferralInfo(inputs);
+
+  const catchUpText =
+    info.catchUp === 0
+      ? `${LIMITS_YEAR} elective-deferral limit (402(g))`
+      : `${fmtUSD(info.baseLimit)} + ${fmtUSD(info.catchUp)} ${
+          inputs.currentAge >= 60 && inputs.currentAge <= 63
+            ? "age 60-63 catch-up"
+            : "age 50+ catch-up"
+        }`;
+
+  return (
+    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+      <div className="text-xs font-medium tracking-wide text-slate-500 uppercase">
+        Pre-tax limit applied
+      </div>
+      <div className="tnum mt-0.5 text-lg font-semibold text-slate-900">
+        {fmtUSD(info.effectiveLimit)}
+        <span className="text-xs font-normal text-slate-400">/yr</span>
+      </div>
+      <div className="mt-0.5 text-xs text-slate-500">{catchUpText}</div>
+      <div
+        className={`mt-1 text-xs ${info.isCapped ? "text-amber-600" : "text-roth-600"}`}
+      >
+        {info.isCapped
+          ? `Your ${inputs.employeeContribPct}% is ${fmtUSD(info.desired)}/yr, capped to the limit.`
+          : `Your ${inputs.employeeContribPct}% is about ${fmtUSD(info.desired)}/yr this year.`}
+      </div>
+    </div>
   );
 }
 
@@ -84,7 +122,7 @@ export function InputsPanel({ inputs, setField, onReset }: InputsPanelProps) {
           max={100}
           hint="% of pay, capped at the 402(g) limit"
         />
-        <div className="hidden sm:block" />
+        <DeferralLimitNote inputs={inputs} />
         <NumberField
           label="Employer match"
           value={inputs.employerMatchPct}
