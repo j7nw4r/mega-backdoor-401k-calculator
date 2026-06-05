@@ -27,6 +27,8 @@ export interface CalculatorInputs {
 
   // Growth
   rateOfReturnPct: number;
+  /** Assumed annual inflation, used to express balances in today's dollars. */
+  inflationPct: number;
 
   // Editable IRS limits (default to verified 2026 figures)
   deferralLimit: number;

@@ -1,4 +1,5 @@
 import type { CalculatorInputs, ComparisonResult } from "../types";
+import { realValue } from "../lib/calc";
 import { fmtUSD } from "../lib/format";
 
 interface ResultsSummaryProps {
@@ -34,6 +35,8 @@ function Stat({
 export function ResultsSummary({ comparison, inputs }: ResultsSummaryProps) {
   const { withMega, megaRothGain } = comparison;
   const years = Math.max(0, inputs.retirementAge - inputs.currentAge);
+  const realTotal = realValue(withMega.finalTotal, inputs.inflationPct, years);
+  const realMegaGain = realValue(megaRothGain, inputs.inflationPct, years);
 
   return (
     <div className="space-y-6">
@@ -44,6 +47,10 @@ export function ResultsSummary({ comparison, inputs }: ResultsSummaryProps) {
         </div>
         <div className="tnum mt-1 text-4xl font-bold sm:text-5xl">
           {fmtUSD(withMega.finalTotal)}
+        </div>
+        <div className="tnum mt-1 text-sm text-brand-100">
+          {fmtUSD(realTotal)} in today&rsquo;s dollars ({inputs.inflationPct}%
+          inflation)
         </div>
         <div className="mt-4 grid grid-cols-2 gap-4 border-t border-white/20 pt-4">
           <div>
@@ -69,7 +76,8 @@ export function ResultsSummary({ comparison, inputs }: ResultsSummaryProps) {
           <p className="mt-1 text-sm text-slate-600">
             That is the extra Roth balance versus contributing nothing
             after-tax, all of it growing and (after conversion) withdrawn
-            tax-free in retirement.
+            tax-free in retirement. About {fmtUSD(realMegaGain)} in
+            today&rsquo;s dollars.
           </p>
         </div>
       )}

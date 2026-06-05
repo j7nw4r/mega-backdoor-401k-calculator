@@ -128,6 +128,16 @@ export function compare(inputs: CalculatorInputs): ComparisonResult {
   };
 }
 
+/** Discount a future nominal dollar amount to today's purchasing power:
+ *  real = nominal / (1 + inflation)^years. The inverse of growth compounding. */
+export function realValue(
+  nominal: number,
+  inflationPct: number,
+  years: number,
+): number {
+  return nominal / Math.pow(1 + inflationPct / 100, Math.max(0, years));
+}
+
 /** The pre-tax deferral limit being applied, and how the elected contribution
  *  sits against it, evaluated for the current age and this year's salary. This
  *  is the same rule project() uses for the first year, surfaced for the UI. */

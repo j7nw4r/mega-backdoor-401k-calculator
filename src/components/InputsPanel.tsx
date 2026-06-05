@@ -166,7 +166,15 @@ export function InputsPanel({ inputs, setField, onReset }: InputsPanelProps) {
           max={20}
           hint="S&P 500 has averaged ~10% long-term"
         />
-        <div className="hidden sm:block" />
+        <NumberField
+          label="Inflation rate"
+          value={inputs.inflationPct}
+          onChange={set("inflationPct")}
+          affix="percent"
+          step={0.5}
+          max={15}
+          hint="used to show today's-dollar values"
+        />
       </Section>
 
       <details className="group rounded-lg border border-slate-200 bg-slate-50 p-4">
