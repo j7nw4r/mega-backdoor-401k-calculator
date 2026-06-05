@@ -36,7 +36,7 @@ export default function App() {
   return (
     <div className="min-h-screen">
       <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
+        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
           <div className="flex items-start justify-between gap-4">
             <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">
               Mega-Backdoor 401(k) Calculator
@@ -62,20 +62,22 @@ export default function App() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <section className="rounded-xl border border-slate-200 bg-white p-5">
-            <h2 className="mb-4 text-lg font-semibold text-slate-900">
-              Your details
-            </h2>
-            <InputsPanel
-              inputs={inputs}
-              setField={setField}
-              onReset={() => setInputs(DEFAULT_INPUTS)}
-            />
-          </section>
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+        <div className="grid gap-6 lg:grid-cols-12">
+          <aside className="lg:col-span-4">
+            <section className="rounded-xl border border-slate-200 bg-white p-5 lg:sticky lg:top-6">
+              <h2 className="mb-4 text-lg font-semibold text-slate-900">
+                Your details
+              </h2>
+              <InputsPanel
+                inputs={inputs}
+                setField={setField}
+                onReset={() => setInputs(DEFAULT_INPUTS)}
+              />
+            </section>
+          </aside>
 
-          <div className="space-y-6">
+          <div className="space-y-6 lg:col-span-8">
             <ResultsSummary comparison={comparison} inputs={inputs} />
             <section className="rounded-xl border border-slate-200 bg-white p-5">
               <GrowthChart
@@ -84,12 +86,9 @@ export default function App() {
                 currentAge={inputs.currentAge}
               />
             </section>
+            <YearByYearTable projection={comparison.withMega} />
+            <AssumptionsDisclosure />
           </div>
-        </div>
-
-        <div className="mt-6 space-y-4">
-          <YearByYearTable projection={comparison.withMega} />
-          <AssumptionsDisclosure />
         </div>
       </main>
 
