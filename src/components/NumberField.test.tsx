@@ -52,4 +52,18 @@ describe("NumberField", () => {
     await user.tab(); // blur
     expect(input.value).toBe("0");
   });
+
+  it("shows the error message and marks the field invalid when error is set", () => {
+    render(
+      <NumberField
+        label="Current age"
+        value={5}
+        onChange={() => {}}
+        error="Must be at least 16"
+      />,
+    );
+    const input = screen.getByLabelText("Current age");
+    expect(input.getAttribute("aria-invalid")).toBe("true");
+    expect(screen.getByText("Must be at least 16")).toBeTruthy();
+  });
 });

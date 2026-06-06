@@ -3,6 +3,7 @@ import type { CalculatorInputs } from "../types";
 import { deferralInfo } from "../lib/calc";
 import { fmtUSD } from "../lib/format";
 import { LIMITS_YEAR } from "../lib/irs";
+import { validateInputs } from "../lib/validation";
 import { NumberField } from "./NumberField";
 
 interface InputsPanelProps {
@@ -59,36 +60,40 @@ function DeferralLimitNote({ inputs }: { inputs: CalculatorInputs }) {
 }
 
 export function InputsPanel({ inputs, setField, onReset }: InputsPanelProps) {
-  const set = (key: keyof CalculatorInputs) => (v: number) => setField(key, v);
+  const errors = validateInputs(inputs);
+
+  // Bundle the value, change handler, and any validation error for a field, so
+  // each NumberField can be wired with a single spread.
+  const field = (key: keyof CalculatorInputs) => ({
+    value: inputs[key],
+    onChange: (v: number) => setField(key, v),
+    error: errors[key],
+  });
 
   return (
     <div className="space-y-5">
       <Section title="You & timeline">
         <NumberField
           label="Current age"
-          value={inputs.currentAge}
-          onChange={set("currentAge")}
+          {...field("currentAge")}
           min={16}
           max={99}
         />
         <NumberField
           label="Retirement age"
-          value={inputs.retirementAge}
-          onChange={set("retirementAge")}
+          {...field("retirementAge")}
           min={inputs.currentAge + 1}
           max={100}
         />
         <NumberField
           label="Current pre-tax balance"
-          value={inputs.currentBalancePretax}
-          onChange={set("currentBalancePretax")}
+          {...field("currentBalancePretax")}
           affix="dollar"
           step={1000}
         />
         <NumberField
           label="Current Roth balance"
-          value={inputs.currentBalanceRoth}
-          onChange={set("currentBalanceRoth")}
+          {...field("currentBalanceRoth")}
           affix="dollar"
           step={1000}
         />
@@ -97,15 +102,13 @@ export function InputsPanel({ inputs, setField, onReset }: InputsPanelProps) {
       <Section title="Income">
         <NumberField
           label="Annual salary"
-          value={inputs.annualSalary}
-          onChange={set("annualSalary")}
+          {...field("annualSalary")}
           affix="dollar"
           step={1000}
         />
         <NumberField
           label="Annual raise"
-          value={inputs.salaryIncreasePct}
-          onChange={set("salaryIncreasePct")}
+          {...field("salaryIncreasePct")}
           affix="percent"
           step={0.5}
           max={25}
@@ -115,8 +118,7 @@ export function InputsPanel({ inputs, setField, onReset }: InputsPanelProps) {
       <Section title="Contributions & match">
         <NumberField
           label="Your pre-tax contribution"
-          value={inputs.employeeContribPct}
-          onChange={set("employeeContribPct")}
+          {...field("employeeContribPct")}
           affix="percent"
           step={1}
           max={100}
@@ -125,8 +127,7 @@ export function InputsPanel({ inputs, setField, onReset }: InputsPanelProps) {
         <DeferralLimitNote inputs={inputs} />
         <NumberField
           label="Employer match"
-          value={inputs.employerMatchPct}
-          onChange={set("employerMatchPct")}
+          {...field("employerMatchPct")}
           affix="percent"
           step={5}
           max={200}
@@ -134,8 +135,7 @@ export function InputsPanel({ inputs, setField, onReset }: InputsPanelProps) {
         />
         <NumberField
           label="Match limit"
-          value={inputs.employerMatchLimitPct}
-          onChange={set("employerMatchLimitPct")}
+          {...field("employerMatchLimitPct")}
           affix="percent"
           step={0.5}
           max={100}
@@ -146,8 +146,7 @@ export function InputsPanel({ inputs, setField, onReset }: InputsPanelProps) {
       <Section title="Mega-backdoor Roth (after-tax)">
         <NumberField
           label="After-tax contribution"
-          value={inputs.afterTaxContribPct}
-          onChange={set("afterTaxContribPct")}
+          {...field("afterTaxContribPct")}
           affix="percent"
           step={1}
           max={100}
@@ -158,8 +157,7 @@ export function InputsPanel({ inputs, setField, onReset }: InputsPanelProps) {
       <Section title="Growth">
         <NumberField
           label="Annual rate of return"
-          value={inputs.rateOfReturnPct}
-          onChange={set("rateOfReturnPct")}
+          {...field("rateOfReturnPct")}
           affix="percent"
           step={0.5}
           max={20}
@@ -167,8 +165,7 @@ export function InputsPanel({ inputs, setField, onReset }: InputsPanelProps) {
         />
         <NumberField
           label="Inflation rate"
-          value={inputs.inflationPct}
-          onChange={set("inflationPct")}
+          {...field("inflationPct")}
           affix="percent"
           step={0.5}
           max={15}
@@ -187,36 +184,31 @@ export function InputsPanel({ inputs, setField, onReset }: InputsPanelProps) {
         <div className="space-y-3">
           <NumberField
             label="Elective deferral limit (402(g))"
-            value={inputs.deferralLimit}
-            onChange={set("deferralLimit")}
+            {...field("deferralLimit")}
             affix="dollar"
             step={500}
           />
           <NumberField
             label="All-sources limit (415(c))"
-            value={inputs.allSourcesLimit}
-            onChange={set("allSourcesLimit")}
+            {...field("allSourcesLimit")}
             affix="dollar"
             step={1000}
           />
           <NumberField
             label="Compensation cap (401(a)(17))"
-            value={inputs.compCap}
-            onChange={set("compCap")}
+            {...field("compCap")}
             affix="dollar"
             step={5000}
           />
           <NumberField
             label="Catch-up (age 50+)"
-            value={inputs.catchUp50}
-            onChange={set("catchUp50")}
+            {...field("catchUp50")}
             affix="dollar"
             step={500}
           />
           <NumberField
             label="Super catch-up (age 60-63)"
-            value={inputs.catchUp6063}
-            onChange={set("catchUp6063")}
+            {...field("catchUp6063")}
             affix="dollar"
             step={500}
           />
