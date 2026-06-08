@@ -169,7 +169,33 @@ export function InputsPanel({ inputs, setField, onReset }: InputsPanelProps) {
           affix="percent"
           step={0.5}
           max={15}
-          hint="used to show today's-dollar values"
+          hint="grows withdrawals and shows today's-dollar values"
+        />
+      </Section>
+
+      <Section title="Retirement drawdown">
+        <NumberField
+          label="Life expectancy"
+          {...field("lifeExpectancy")}
+          min={inputs.retirementAge + 1}
+          max={120}
+          hint="age the projection draws down through"
+        />
+        <NumberField
+          label="Withdrawal rate"
+          {...field("withdrawalRate")}
+          affix="percent"
+          step={0.1}
+          max={20}
+          hint="of the balance at retirement, year one (the 4% rule)"
+        />
+        <NumberField
+          label="Return in retirement"
+          {...field("retirementReturnPct")}
+          affix="percent"
+          step={0.5}
+          max={30}
+          hint="often lower as the portfolio derisks"
         />
       </Section>
 

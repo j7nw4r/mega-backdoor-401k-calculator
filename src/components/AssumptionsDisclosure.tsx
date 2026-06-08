@@ -40,6 +40,15 @@ export function AssumptionsDisclosure() {
             (true-ups, vesting schedules).
           </li>
           <li>
+            In retirement, the first-year withdrawal is your withdrawal rate
+            applied to the balance at retirement (the "4% rule"); that dollar
+            amount then grows with inflation each year so your spending power
+            stays level. Withdrawals are taken pro-rata from the pre-tax and
+            Roth buckets, and the remainder compounds monthly at your
+            in-retirement return through your life expectancy. Taxes on pre-tax
+            withdrawals and Required Minimum Distributions are not modeled.
+          </li>
+          <li>
             Default limits are the {LIMITS_YEAR} IRS figures and are editable
             under “Advanced.” Catch-up contributions apply automatically by age.
           </li>

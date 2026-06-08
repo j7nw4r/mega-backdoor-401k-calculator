@@ -25,6 +25,9 @@ const RULES: Partial<Record<keyof CalculatorInputs, Rule>> = {
   afterTaxContribPct: { min: 0, max: 100 },
   rateOfReturnPct: { min: 0, max: 30 },
   inflationPct: { min: 0, max: 15 },
+  lifeExpectancy: { min: 18, max: 120, integer: true },
+  withdrawalRate: { min: 0, max: 20 },
+  retirementReturnPct: { min: 0, max: 30 },
   deferralLimit: { min: 1, max: 1_000_000 },
   allSourcesLimit: { min: 1, max: 1_000_000 },
   compCap: { min: 1, max: 100_000_000 },
@@ -62,6 +65,11 @@ export function validateInputs(inputs: CalculatorInputs): FieldErrors {
   // projection at all). Only add it if the field is otherwise in range.
   if (!errors.retirementAge && inputs.retirementAge <= inputs.currentAge)
     errors.retirementAge = "Must be greater than current age";
+
+  // Cross-field: you cannot live shorter than you retire, or there is nothing
+  // to draw down. Only add it if the field is otherwise in range.
+  if (!errors.lifeExpectancy && inputs.lifeExpectancy <= inputs.retirementAge)
+    errors.lifeExpectancy = "Must be greater than retirement age";
 
   // Cross-field: the all-sources (415(c)) limit cannot be below the elective
   // deferral (402(g)) limit, since deferrals count toward all-sources.

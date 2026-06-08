@@ -26,7 +26,8 @@ describe("project", () => {
         rateOfReturnPct: 0,
       }),
     );
-    expect(r.rows).toHaveLength(1);
+    const accum = r.rows.filter((row) => row.phase === "accumulation");
+    expect(accum).toHaveLength(1);
     expect(r.rows[0].deferral).toBeCloseTo(10_000, 6);
     expect(r.rows[0].match).toBeCloseTo(3_000, 6);
     expect(r.finalPretax).toBeCloseTo(13_000, 6);
@@ -138,6 +139,78 @@ describe("project", () => {
       DEFAULT_INPUTS.currentBalancePretax + DEFAULT_INPUTS.currentBalanceRoth,
       6,
     );
+  });
+});
+
+describe("drawdown", () => {
+  // A clean base: one accumulation year that leaves exactly $1,000,000 at
+  // retirement (no contributions, no growth), then draw it down.
+  const base = (overrides: Partial<CalculatorInputs>) =>
+    project(
+      inputs({
+        currentAge: 64,
+        retirementAge: 65,
+        currentBalancePretax: 1_000_000,
+        currentBalanceRoth: 0,
+        annualSalary: 0,
+        salaryIncreasePct: 0,
+        employeeContribPct: 0,
+        employerMatchPct: 0,
+        afterTaxContribPct: 0,
+        rateOfReturnPct: 0,
+        inflationPct: 0,
+        retirementReturnPct: 0,
+        ...overrides,
+      }),
+    );
+
+  it("appends one drawdown row per year through life expectancy inclusive", () => {
+    const r = base({ lifeExpectancy: 70, withdrawalRate: 0 });
+    const drawdown = r.rows.filter((row) => row.phase === "drawdown");
+    expect(drawdown).toHaveLength(6); // ages 65..70 inclusive
+    expect(drawdown.map((row) => row.age)).toEqual([65, 66, 67, 68, 69, 70]);
+    // finalTotal stays the balance at retirement, not the drawdown end balance.
+    expect(r.finalTotal).toBeCloseTo(1_000_000, 4);
+  });
+
+  it("sizes the first withdrawal off the retirement balance (the 4% rule)", () => {
+    const r = base({ lifeExpectancy: 90, withdrawalRate: 4 });
+    expect(r.firstYearWithdrawal).toBeCloseTo(40_000, 6);
+  });
+
+  it("leaves the balance untouched when the withdrawal rate is zero", () => {
+    const r = base({ lifeExpectancy: 90, withdrawalRate: 0 });
+    expect(r.totalWithdrawn).toBeCloseTo(0, 6);
+    expect(r.endBalance).toBeCloseTo(1_000_000, 4);
+    expect(r.depletedAge).toBeNull();
+  });
+
+  it("depletes the account and reports the age it runs out", () => {
+    // 50% of $1M = $500k/yr with no growth: gone after two years (ages 65, 66).
+    const r = base({ lifeExpectancy: 90, withdrawalRate: 50 });
+    expect(r.depletedAge).toBe(66);
+    expect(r.endBalance).toBeCloseTo(0, 4);
+    expect(r.totalWithdrawn).toBeCloseTo(1_000_000, 4);
+    // Once depleted the later rows hold a zero balance.
+    const last = r.rows[r.rows.length - 1];
+    expect(last.totalBalance).toBeCloseTo(0, 6);
+  });
+
+  it("grows the withdrawal with inflation each year", () => {
+    const r = base({ lifeExpectancy: 67, withdrawalRate: 4, inflationPct: 10 });
+    const draws = r.rows.filter((row) => row.phase === "drawdown");
+    // Year two's withdrawal is the first grown by 10%.
+    expect(draws[1].withdrawal).toBeCloseTo(draws[0].withdrawal * 1.1, 2);
+  });
+
+  it("survives to life expectancy when the rate is sustainable", () => {
+    const r = base({
+      lifeExpectancy: 95,
+      withdrawalRate: 3,
+      retirementReturnPct: 5,
+    });
+    expect(r.depletedAge).toBeNull();
+    expect(r.endBalance).toBeGreaterThan(0);
   });
 });
 

@@ -19,6 +19,11 @@ import { catchUpForAge } from "./irs";
  *   - Employer match is matchPct applied to the lesser of the elected
  *     contribution % and the match-limit %, on capped salary. (Real plans may
  *     differ via true-ups; this is the standard simplified model.)
+ *
+ * After retirementAge the balance enters drawdown: a first-year withdrawal of
+ * withdrawalRate% of the retirement balance (the "4% rule"), grown by inflation
+ * each year, pulled pro-rata from the pre-tax and Roth buckets and the
+ * remainder compounded monthly at retirementReturnPct, through lifeExpectancy.
  */
 export function project(inputs: CalculatorInputs): ProjectionResult {
   const {
@@ -33,6 +38,10 @@ export function project(inputs: CalculatorInputs): ProjectionResult {
     employerMatchLimitPct,
     afterTaxContribPct,
     rateOfReturnPct,
+    inflationPct,
+    lifeExpectancy,
+    withdrawalRate,
+    retirementReturnPct,
     deferralLimit,
     allSourcesLimit,
     compCap,
@@ -86,6 +95,7 @@ export function project(inputs: CalculatorInputs): ProjectionResult {
     }
 
     rows.push({
+      phase: "accumulation",
       age,
       salary,
       cappedSalary,
@@ -93,6 +103,7 @@ export function project(inputs: CalculatorInputs): ProjectionResult {
       match,
       afterTax,
       totalContribution,
+      withdrawal: 0,
       pretaxBalance: pretax,
       rothBalance: roth,
       totalBalance: pretax + roth,
@@ -101,16 +112,83 @@ export function project(inputs: CalculatorInputs): ProjectionResult {
     salary = salary * (1 + salaryIncreasePct / 100);
   }
 
+  // Snapshot the balance at retirement: this is the headline figure and the
+  // base for the withdrawal, so it must be captured before the drawdown loop
+  // starts spending it down.
+  const finalPretax = pretax;
+  const finalRoth = roth;
   const finalTotal = pretax + roth;
   const startingBalance = currentBalancePretax + currentBalanceRoth;
 
+  // Drawdown: ages [retirementAge, lifeExpectancy]. The first year's withdrawal
+  // is withdrawalRate% of the retirement balance; each later year scales that
+  // dollar figure by inflation so spending power stays constant in real terms.
+  const firstYearWithdrawal = (withdrawalRate / 100) * finalTotal;
+  const retireMonthlyRate = retirementReturnPct / 100 / 12;
+  // Draw down through life expectancy inclusive (you spend during your final
+  // year), so ages run [retirementAge, lifeExpectancy]. Only runs when there is
+  // a real accumulation phase; otherwise the projection is empty and the UI
+  // shows its prompt-for-input state, matching validation.
+  const drawdownYears =
+    years > 0 && lifeExpectancy > retirementAge
+      ? Math.floor(lifeExpectancy - retirementAge) + 1
+      : 0;
+  let totalWithdrawn = 0;
+  let depletedAge: number | null = null;
+
+  for (let i = 0; i < drawdownYears; i++) {
+    const age = retirementAge + i;
+    const yearWithdrawal =
+      firstYearWithdrawal * Math.pow(1 + inflationPct / 100, i);
+    const monthlyWithdrawal = yearWithdrawal / 12;
+    let withdrawnThisYear = 0;
+
+    for (let m = 0; m < 12; m++) {
+      // Grow first, then take the month's spending from whatever is left.
+      pretax = pretax * (1 + retireMonthlyRate);
+      roth = roth * (1 + retireMonthlyRate);
+      const total = pretax + roth;
+      const take = Math.min(monthlyWithdrawal, total);
+      if (total > 0) {
+        // Pull from each bucket in proportion to its current size.
+        pretax -= take * (pretax / total);
+        roth -= take * (roth / total);
+      }
+      withdrawnThisYear += take;
+    }
+
+    totalWithdrawn += withdrawnThisYear;
+    // The money is exhausted the first year its end balance hits zero. Once at
+    // zero it stays there (each withdrawal just takes whatever growth produced).
+    if (depletedAge === null && pretax + roth <= 1e-6) depletedAge = age;
+
+    rows.push({
+      phase: "drawdown",
+      age,
+      salary: 0,
+      cappedSalary: 0,
+      deferral: 0,
+      match: 0,
+      afterTax: 0,
+      totalContribution: 0,
+      withdrawal: withdrawnThisYear,
+      pretaxBalance: pretax,
+      rothBalance: roth,
+      totalBalance: pretax + roth,
+    });
+  }
+
   return {
     rows,
-    finalPretax: pretax,
-    finalRoth: roth,
+    finalPretax,
+    finalRoth,
     finalTotal,
     totalContributed,
     totalGrowth: finalTotal - totalContributed - startingBalance,
+    firstYearWithdrawal,
+    totalWithdrawn,
+    endBalance: pretax + roth,
+    depletedAge,
   };
 }
 

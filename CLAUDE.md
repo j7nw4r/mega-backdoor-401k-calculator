@@ -1,7 +1,8 @@
 # CLAUDE.md: Mega-Backdoor 401(k) Calculator
 
 A client-side React + Vite + Tailwind SPA that projects a 401(k) to retirement,
-including mega-backdoor Roth (after-tax) contributions. No backend.
+including mega-backdoor Roth (after-tax) contributions, then draws the balance
+down through life expectancy. No backend.
 
 ## Where things live
 
