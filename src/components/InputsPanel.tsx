@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
-import type { CalculatorInputs } from "../types";
-import { deferralInfo } from "../lib/calc";
-import { fmtUSD } from "../lib/format";
+import type { CalculatorInputs, ProjectionResult } from "../types";
+import { deferralInfo, realValue } from "../lib/calc";
+import { fmtPct, fmtUSD } from "../lib/format";
 import { LIMITS_YEAR } from "../lib/irs";
 import { validateInputs } from "../lib/validation";
 import { NumberField } from "./NumberField";
@@ -9,6 +9,7 @@ import { NumberField } from "./NumberField";
 interface InputsPanelProps {
   inputs: CalculatorInputs;
   setField: (key: keyof CalculatorInputs, value: number) => void;
+  projection: ProjectionResult;
   onReset: () => void;
 }
 
@@ -59,7 +60,56 @@ function DeferralLimitNote({ inputs }: { inputs: CalculatorInputs }) {
   );
 }
 
-export function InputsPanel({ inputs, setField, onReset }: InputsPanelProps) {
+/** Translates the abstract withdrawal *rate* into the concrete dollars it pulls
+ *  in year one: rate% of the projected balance at retirement, with a monthly
+ *  figure and a today's-dollars equivalent. Mirrors the engine's
+ *  firstYearWithdrawal so the panel and the results never disagree. */
+function WithdrawalNote({
+  inputs,
+  projection,
+}: {
+  inputs: CalculatorInputs;
+  projection: ProjectionResult;
+}) {
+  const hasDrawdown = projection.rows.some((r) => r.phase === "drawdown");
+  if (!hasDrawdown || projection.firstYearWithdrawal <= 0) return null;
+
+  const { firstYearWithdrawal, finalTotal } = projection;
+  const yearsToRetire = Math.max(0, inputs.retirementAge - inputs.currentAge);
+  const inToday = realValue(
+    firstYearWithdrawal,
+    inputs.inflationPct,
+    yearsToRetire,
+  );
+
+  return (
+    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+      <div className="text-xs font-medium tracking-wide text-slate-500 uppercase">
+        First-year withdrawal
+      </div>
+      <div className="tnum mt-0.5 text-lg font-semibold text-slate-900">
+        {fmtUSD(firstYearWithdrawal)}
+        <span className="text-xs font-normal text-slate-400">/yr</span>
+      </div>
+      <div className="mt-0.5 text-xs text-slate-500">
+        {fmtPct(inputs.withdrawalRate)} of your {fmtUSD(finalTotal)} balance at
+        retirement, about {fmtUSD(firstYearWithdrawal / 12)}/mo.
+      </div>
+      {inputs.inflationPct > 0 && yearsToRetire > 0 && (
+        <div className="mt-1 text-xs text-slate-400">
+          ≈ {fmtUSD(inToday)}/yr in today&rsquo;s dollars.
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function InputsPanel({
+  inputs,
+  setField,
+  projection,
+  onReset,
+}: InputsPanelProps) {
   const errors = validateInputs(inputs);
 
   // Bundle the value, change handler, and any validation error for a field, so
@@ -189,6 +239,7 @@ export function InputsPanel({ inputs, setField, onReset }: InputsPanelProps) {
           max={20}
           hint="of the balance at retirement, year one (the 4% rule)"
         />
+        <WithdrawalNote inputs={inputs} projection={projection} />
         <NumberField
           label="Return in retirement"
           {...field("retirementReturnPct")}

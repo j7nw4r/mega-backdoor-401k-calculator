@@ -72,6 +72,7 @@ export default function App() {
               <InputsPanel
                 inputs={inputs}
                 setField={setField}
+                projection={comparison.withMega}
                 onReset={() => setInputs(DEFAULT_INPUTS)}
               />
             </section>
