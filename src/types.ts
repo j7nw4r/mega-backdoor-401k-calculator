@@ -27,8 +27,18 @@ export interface CalculatorInputs {
 
   // Growth
   rateOfReturnPct: number;
-  /** Assumed annual inflation, used to express balances in today's dollars. */
+  /** Assumed annual inflation, used to express balances in today's dollars and
+   *  to grow the retirement withdrawal each year. */
   inflationPct: number;
+
+  // Retirement drawdown (after retirementAge)
+  /** Age the drawdown runs through; the last year money may be withdrawn. */
+  lifeExpectancy: number;
+  /** First-year withdrawal as a percent of the balance at retirement (the "4%
+   *  rule"); the dollar amount then grows with inflation each year. */
+  withdrawalRate: number;
+  /** Annual return during retirement, typically lower as the portfolio derisks. */
+  retirementReturnPct: number;
 
   // Editable IRS limits (default to verified 2026 figures)
   deferralLimit: number;
@@ -38,25 +48,29 @@ export interface CalculatorInputs {
   catchUp6063: number;
 }
 
-/** One projected year of contributions and end-of-year balances. */
+/** One projected year of contributions or withdrawals and end-of-year balances. */
 export interface YearRow {
-  /** Age during this contribution year. */
+  /** Whether this year is in the saving or the spending phase. */
+  phase: "accumulation" | "drawdown";
+  /** Age during this year. */
   age: number;
-  /** Salary for the year (before the compensation cap is applied). */
+  /** Salary for the year (before the compensation cap is applied). 0 in drawdown. */
   salary: number;
-  /** Salary actually usable for plan math (after 401(a)(17) cap). */
+  /** Salary actually usable for plan math (after 401(a)(17) cap). 0 in drawdown. */
   cappedSalary: number;
-  /** Employee pre-tax elective deferral (incl. any catch-up). */
+  /** Employee pre-tax elective deferral (incl. any catch-up). 0 in drawdown. */
   deferral: number;
-  /** Employer matching contribution. */
+  /** Employer matching contribution. 0 in drawdown. */
   match: number;
-  /** After-tax (mega-backdoor) contribution after clamping to available room. */
+  /** After-tax (mega-backdoor) contribution after clamping to room. 0 in drawdown. */
   afterTax: number;
-  /** Total contributed this year from all sources. */
+  /** Total contributed this year from all sources. 0 in drawdown. */
   totalContribution: number;
-  /** Pre-tax bucket balance at end of year (deferral + match + growth). */
+  /** Amount withdrawn this year. 0 during accumulation. */
+  withdrawal: number;
+  /** Pre-tax bucket balance at end of year. */
   pretaxBalance: number;
-  /** Roth bucket balance at end of year (after-tax + growth). */
+  /** Roth bucket balance at end of year. */
   rothBalance: number;
   /** Combined balance at end of year. */
   totalBalance: number;
@@ -64,17 +78,26 @@ export interface YearRow {
 
 /** Full projection result for one scenario. */
 export interface ProjectionResult {
+  /** Accumulation years followed by drawdown years, contiguous by age. */
   rows: YearRow[];
-  /** End-of-projection pre-tax balance. */
+  /** Pre-tax balance at retirement (the peak, before any withdrawals). */
   finalPretax: number;
-  /** End-of-projection Roth balance. */
+  /** Roth balance at retirement. */
   finalRoth: number;
-  /** End-of-projection combined balance. */
+  /** Combined balance at retirement; the headline "you'll have $X" figure. */
   finalTotal: number;
   /** Sum of all dollars actually contributed (employee + match + after-tax). */
   totalContributed: number;
   /** finalTotal minus totalContributed minus starting balances = investment growth. */
   totalGrowth: number;
+  /** First-year withdrawal amount (withdrawalRate% of the balance at retirement). */
+  firstYearWithdrawal: number;
+  /** Sum of every dollar actually withdrawn across the drawdown phase. */
+  totalWithdrawn: number;
+  /** Combined balance at the end of the drawdown (age lifeExpectancy). */
+  endBalance: number;
+  /** Age the money runs out, or null if it lasts through life expectancy. */
+  depletedAge: number | null;
 }
 
 /** A projection plus its no-mega-backdoor counterpart, for comparison. */

@@ -28,6 +28,10 @@ export const DEFAULT_INPUTS: CalculatorInputs = {
   rateOfReturnPct: 7,
   inflationPct: 3,
 
+  lifeExpectancy: 90,
+  withdrawalRate: 4, // the classic "4% rule"
+  retirementReturnPct: 5, // a derisked, bond-heavier post-retirement allocation
+
   deferralLimit: DEFERRAL_LIMIT_2026,
   allSourcesLimit: ALL_SOURCES_LIMIT_2026,
   compCap: COMP_CAP_2026,

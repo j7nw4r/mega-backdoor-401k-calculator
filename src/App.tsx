@@ -84,6 +84,7 @@ export default function App() {
                 projection={comparison.withMega}
                 inflationPct={inputs.inflationPct}
                 currentAge={inputs.currentAge}
+                retirementAge={inputs.retirementAge}
               />
             </section>
             <YearByYearTable projection={comparison.withMega} />

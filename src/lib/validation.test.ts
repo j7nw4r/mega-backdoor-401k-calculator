@@ -51,6 +51,26 @@ describe("validateInputs", () => {
     ).toBe("Cannot be below the deferral limit");
   });
 
+  it("requires life expectancy to be after retirement age", () => {
+    expect(
+      validateInputs(inputs({ retirementAge: 65, lifeExpectancy: 65 }))
+        .lifeExpectancy,
+    ).toBe("Must be greater than retirement age");
+    expect(
+      validateInputs(inputs({ retirementAge: 65, lifeExpectancy: 60 }))
+        .lifeExpectancy,
+    ).toBe("Must be greater than retirement age");
+  });
+
+  it("flags an out-of-range withdrawal rate", () => {
+    expect(validateInputs(inputs({ withdrawalRate: 25 })).withdrawalRate).toBe(
+      "Must be at most 20",
+    );
+    expect(validateInputs(inputs({ withdrawalRate: -1 })).withdrawalRate).toBe(
+      "Cannot be negative",
+    );
+  });
+
   it("rejects a zero deferral limit", () => {
     expect(validateInputs(inputs({ deferralLimit: 0 })).deferralLimit).toBe(
       "Must be at least 1",

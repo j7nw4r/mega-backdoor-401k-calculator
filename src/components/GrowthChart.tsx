@@ -4,6 +4,7 @@ import {
   AreaChart,
   CartesianGrid,
   Legend,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -19,6 +20,8 @@ interface GrowthChartProps {
   inflationPct: number;
   /** Age at the start of the projection, the discount baseline. */
   currentAge: number;
+  /** Age saving ends and drawdown begins; marked with a reference line. */
+  retirementAge: number;
 }
 
 /** Compact axis labels: $2.4M, $750k, $0. */
@@ -62,6 +65,7 @@ export function GrowthChart({
   projection,
   inflationPct,
   currentAge,
+  retirementAge,
 }: GrowthChartProps) {
   const [real, setReal] = useState(false);
 
@@ -78,7 +82,9 @@ export function GrowthChart({
 
   const header = (
     <div className="mb-4 flex items-center justify-between gap-4">
-      <h2 className="text-lg font-semibold text-slate-900">Balance growth</h2>
+      <h2 className="text-lg font-semibold text-slate-900">
+        Balance over time
+      </h2>
       <Toggle real={real} onChange={setReal} />
     </div>
   );
@@ -143,6 +149,17 @@ export function GrowthChart({
             }}
           />
           <Legend wrapperStyle={{ fontSize: 13 }} />
+          <ReferenceLine
+            x={retirementAge}
+            stroke="#94a3b8"
+            strokeDasharray="4 4"
+            label={{
+              value: `Retire at ${retirementAge}`,
+              position: "insideTopRight",
+              fontSize: 11,
+              fill: "#64748b",
+            }}
+          />
           <Area
             type="monotone"
             dataKey="Pretax"

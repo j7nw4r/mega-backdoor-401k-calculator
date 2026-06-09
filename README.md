@@ -3,8 +3,9 @@
 A retirement calculator in the spirit of Bankrate's 401(k) calculator, but with
 the one thing those tools leave out: **mega-backdoor Roth** (after-tax)
 contributions. It projects your balance to retirement, tracks the pre-tax and
-Roth buckets separately, and shows how much extra tax-free money the
-mega-backdoor strategy adds.
+Roth buckets separately, shows how much extra tax-free money the mega-backdoor
+strategy adds, and then continues past retirement to show how withdrawals draw
+the balance down.
 
 Live site: https://mega-backdoor-401k-calculator.pages.dev
 
@@ -23,6 +24,12 @@ Live site: https://mega-backdoor-401k-calculator.pages.dev
 - Age-based catch-up: standard at 50+, the SECURE 2.0 super catch-up at 60-63.
 - An **inflation-adjusted ("today's dollars") view** of the projected balance,
   discounting nominal dollars by your inflation assumption.
+- A **retirement drawdown** that continues the projection through your life
+  expectancy: a first-year withdrawal of your chosen rate against the balance at
+  retirement (the "4% rule"), grown with inflation each year, pulled pro-rata
+  from the pre-tax and Roth buckets, with the remainder compounding at your
+  in-retirement return. It tells you whether the money lasts or the age it runs
+  out. Taxes on pre-tax withdrawals and RMDs are not modeled.
 
 It runs the projection twice (with and without the after-tax contribution) to
 quantify the mega-backdoor gain.
